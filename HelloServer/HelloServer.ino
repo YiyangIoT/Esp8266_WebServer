@@ -8,11 +8,31 @@ const char* password = "...";
 
 ESP8266WebServer server(80);
 
-const int led = 13;
+const int led = 2;
+
+void handleA0() {
+
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/json", String("{\"A0\":") + analogRead(A0) + "}");
+  
+}
+
+void handleBlink() {
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", "This is Blink Function!");
+
+  for (int i = 0; i < 10; i++) {
+    digitalWrite(led, 1);
+    delay(500);
+    digitalWrite(led, 0);
+    delay(500);
+  }
+}
 
 void handleRoot() {
   digitalWrite(led, 1);
   server.send(200, "text/plain", "hello from esp8266!");
+  delay(1000);
   digitalWrite(led, 0);
 }
 
@@ -52,11 +72,15 @@ void setup(void) {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  if (MDNS.begin("esp8266")) {
-    Serial.println("MDNS responder started");
-  }
+//  if (MDNS.begin("esp8266")) {
+//    Serial.println("MDNS responder started");
+//  }
 
   server.on("/", handleRoot);
+  
+  server.on("/blink", handleBlink);
+  
+  server.on("/a0", handleA0);
 
   server.on("/inline", []() {
     server.send(200, "text/plain", "this works as well");
